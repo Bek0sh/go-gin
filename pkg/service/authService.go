@@ -4,14 +4,16 @@ import (
 	"fmt"
 	"project2/pkg/config"
 	"project2/pkg/models"
-	irepo "project2/pkg/repository/repoInterfaces"
-	iservice "project2/pkg/service/serviceInterfaces"
+	irepo "project2/pkg/repository/irepository"
+	iservice "project2/pkg/service/iservice"
 	"project2/pkg/utils"
 )
 
 type AuthService struct {
 	repo irepo.UserInterface
 }
+
+var CurrentUser models.ResponseUser
 
 func NewAuthService(repo irepo.UserInterface) iservice.AuthServiceInterface {
 	return &AuthService{repo: repo}
@@ -71,4 +73,21 @@ func (service *AuthService) SignIn(userInput models.SignInUser) (string, string,
 	}
 
 	return accessToken, refreshToken, nil
+}
+
+func (service *AuthService) GetUserById(id uint) (*models.ResponseUser, error) {
+	user, err := service.repo.FindUserById(id)
+
+	if err != nil {
+		return &models.ResponseUser{}, err
+	}
+
+	userResponse := &models.ResponseUser{
+		Model:   user.Model,
+		Name:    user.Name,
+		Surname: user.Surname,
+		Email:   user.Email,
+	}
+
+	return userResponse, nil
 }

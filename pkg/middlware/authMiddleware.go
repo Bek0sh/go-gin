@@ -1,10 +1,10 @@
 package middlware
 
 import (
-	"log"
 	"net/http"
 	"project2/pkg/config"
-	interfaces "project2/pkg/repository/repoInterfaces"
+	"project2/pkg/models"
+	interfaces "project2/pkg/repository/irepository"
 	"project2/pkg/utils"
 	"strings"
 
@@ -48,10 +48,14 @@ func CheckAuthMiddleware(repo interfaces.UserInterface) gin.HandlerFunc {
 			)
 		}
 
-		log.Println(id)
-		log.Println(config.AccessTokenPrivateKey)
-
 		user, err := repo.FindUserById(uint(id.(float64)))
+
+		current_user := &models.ResponseUser{
+			Model:   user.Model,
+			Name:    user.Name,
+			Surname: user.Surname,
+			Email:   user.Email,
+		}
 
 		if err != nil {
 			ctx.AbortWithStatusJSON(
@@ -64,7 +68,7 @@ func CheckAuthMiddleware(repo interfaces.UserInterface) gin.HandlerFunc {
 			return
 		}
 
-		ctx.Set("current_user", user)
+		ctx.Set("current_user", current_user)
 		ctx.Next()
 	}
 }
