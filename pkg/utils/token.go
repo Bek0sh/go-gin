@@ -1,40 +1,31 @@
 package utils
 
 import (
+	"encoding/base64"
 	"fmt"
 	"time"
 
 	"github.com/golang-jwt/jwt"
 )
 
-type claim struct {
-	id             uint
-	email          string
-	standardClaims jwt.StandardClaims
-}
-
-func CreateToken(duration time.Duration, id uint, email, secretKey string) (string, error) {
-	// decodedPrivateKey, err := base64.StdEncoding.DecodeString(secretKey)
-	// if err != nil {
-	// 	fmt.Println("failed to decode")
-	// 	return "", fmt.Errorf("failed to decode private key: %s", err.Error())
-	// }
-
-	// key, err := jwt.ParseRSAPrivateKeyFromPEM(decodedPrivateKey)
-	// if err != nil {
-	// 	fmt.Println("failed to parse decodedkey, \n" + err.Error())
-	// 	return "", fmt.Errorf("failed to parse decoded private key: %s", err.Error())
-	// }
-
-	claims := &claim{
-		id:    id,
-		email: email,
-		standardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(duration).Unix(),
-		},
+func CreateToken(duration time.Duration, payload interface{}, email, secretKey string) (string, error) {
+	decodedPrivateKey, err := base64.StdEncoding.DecodeString(secretKey)
+	if err != nil {
+		fmt.Println("failed to decode")
+		return "", fmt.Errorf("failed to decode private key: %s", err.Error())
 	}
 
-	signedToken, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString([]byte(secretKey))
+	key, err := jwt.ParseRSAPrivateKeyFromPEM(decodedPrivateKey)
+	if err != nil {
+		fmt.Println("failed to parse decodedkey, \n" + err.Error())
+		return "", fmt.Errorf("failed to parse decoded private key: %s", err.Error())
+	}
+
+	claims := make(jwt.MapClaims)
+	claims["sub"] = payload
+	claims["exp"] = time.Hour * 24
+
+	signedToken, err := jwt.NewWithClaims(jwt.SigningMethodRS256, claims).SignedString(key)
 
 	if err != nil {
 		fmt.Println("failed to sign token")
@@ -45,32 +36,33 @@ func CreateToken(duration time.Duration, id uint, email, secretKey string) (stri
 }
 
 func VerifyToken(token, publicKey string) (interface{}, error) {
-	// decodedPublicKey, err := base64.StdEncoding.DecodeString(publicKey)
-	// if err != nil {
-	// 	return "", fmt.Errorf("failed to decode public key")
-	// }
+	decodedPublicKey, err := base64.StdEncoding.DecodeString(publicKey)
+	if err != nil {
+		return 0, fmt.Errorf("failed to decode public key")
+	}
 
-	// key, err := jwt.ParseECPublicKeyFromPEM(decodedPublicKey)
-	// if err != nil {
-	// 	return "", fmt.Errorf("failed to parse public key: %s", err.Error())
-	// }
+	key, err := jwt.ParseRSAPublicKeyFromPEM(decodedPublicKey)
+	if err != nil {
+		return 0, fmt.Errorf("failed to parse public key: %s", err.Error())
+	}
 
-	claims := claim{}
-	parsedToken, err := jwt.ParseWithClaims(token, claims, func(t *jwt.Token) (interface{}, error) {
+	parsedToken, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodRSA); !ok {
-			return "", fmt.Errorf("unexpected method: %s", t.Header["alg"])
+			return nil, fmt.Errorf("unexpected method: %s", t.Header["alg"])
 		}
-
-		return []byte(publicKey), nil
+		return key, nil
 	})
 
 	if err != nil {
-		return "", fmt.Errorf("validate: %s", err.Error())
+		fmt.Println("error 4 \n " + err.Error())
+		return 0, fmt.Errorf("validate: %s", err.Error())
 	}
 
-	if !parsedToken.Valid {
-		return "", fmt.Errorf("validate: invalid token")
+	claims, ok := parsedToken.Claims.(jwt.MapClaims)
+
+	if !parsedToken.Valid || !ok {
+		return 0, fmt.Errorf("validate: invalid token")
 	}
 
-	return claims.id, nil
+	return claims["sub"], nil
 }

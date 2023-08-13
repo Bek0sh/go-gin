@@ -47,7 +47,7 @@ func (repo *userRepository) SignInUser(user *models.SignInUser) error {
 	return nil
 }
 
-func (repo *userRepository) FindUserById(id int) (*models.User, error) {
+func (repo *userRepository) FindUserById(id uint) (*models.User, error) {
 	var user models.User
 	if err := repo.db.First(&user, "id=?", id).Error; err != nil {
 		return &models.User{}, err

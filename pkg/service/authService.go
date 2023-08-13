@@ -54,7 +54,7 @@ func (service *AuthService) SignIn(userInput models.SignInUser) (string, string,
 
 	config, _ := config.LoadConfig(".")
 
-	accessToken, err := utils.CreateToken(config.AccessTokenExpiresIn, user.ID, config.AccessTokenPrivateKey)
+	accessToken, err := utils.CreateToken(config.AccessTokenExpiresIn, user.ID, user.Email, config.AccessTokenPrivateKey)
 
 	if err != nil {
 		fmt.Print("failed to create access_token")
@@ -62,7 +62,7 @@ func (service *AuthService) SignIn(userInput models.SignInUser) (string, string,
 		return "", "", fmt.Errorf("failed to create acccess_token, error: %s", err.Error())
 	}
 
-	refreshToken, err := utils.CreateToken(config.RefreshTokenExpiresIn, user.ID, config.RefreshTokenPrivateKey)
+	refreshToken, err := utils.CreateToken(config.RefreshTokenExpiresIn, user.ID, user.Email, config.RefreshTokenPrivateKey)
 
 	if err != nil {
 		fmt.Print("failed to create access_token")

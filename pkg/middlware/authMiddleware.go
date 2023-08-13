@@ -1,6 +1,7 @@
 package middlware
 
 import (
+	"log"
 	"net/http"
 	"project2/pkg/config"
 	interfaces "project2/pkg/repository/repoInterfaces"
@@ -35,7 +36,7 @@ func CheckAuthMiddleware(repo interfaces.UserInterface) gin.HandlerFunc {
 
 		config, _ := config.LoadConfig(".")
 
-		id, err := utils.VerifyToken(access_token, config.AccessTokenPubliceKey)
+		id, err := utils.VerifyToken(access_token, config.AccessTokenPublicKey)
 
 		if err != nil {
 			ctx.AbortWithStatusJSON(
@@ -47,14 +48,17 @@ func CheckAuthMiddleware(repo interfaces.UserInterface) gin.HandlerFunc {
 			)
 		}
 
-		user, err := repo.FindUserById(id.(int))
+		log.Println(id)
+		log.Println(config.AccessTokenPrivateKey)
+
+		user, err := repo.FindUserById(uint(id.(float64)))
 
 		if err != nil {
 			ctx.AbortWithStatusJSON(
 				http.StatusUnauthorized,
 				gin.H{
 					"status":  "fail",
-					"message": "The user belonging to this token no logger exists",
+					"message": "The user belonging to this token no longer exists",
 				},
 			)
 			return
