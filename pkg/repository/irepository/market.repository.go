@@ -3,7 +3,7 @@ package interfaces
 import "project2/pkg/models"
 
 type MarketInterface interface {
-	CreateProduct(product *models.ProductInput) (uint, error)
+	CreateProduct(product *models.Product) (uint, error)
 	GetProductById(id uint) (*models.Product, error)
 	GetProductByName(name string) ([]models.Product, error)
 	GetAllProducts() ([]models.Product, error)

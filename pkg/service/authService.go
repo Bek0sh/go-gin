@@ -13,7 +13,7 @@ type AuthService struct {
 	repo irepo.UserInterface
 }
 
-var CurrentUser models.ResponseUser
+var currentUser models.ResponseUser
 
 func NewAuthService(repo irepo.UserInterface) iservice.AuthServiceInterface {
 	return &AuthService{repo: repo}
@@ -46,7 +46,7 @@ func (service *AuthService) SignIn(userInput models.SignInUser) (string, string,
 	user, err := service.repo.FindUserByEmail(userInput.Email)
 
 	if err != nil {
-		return "", "", fmt.Errorf("Failed to find user with email=%s, error: %s", userInput.Email, err.Error())
+		return "", "", fmt.Errorf("failed to find user with email=%s, error: %s", userInput.Email, err.Error())
 	}
 
 	if err = utils.CheckPassword(user.Password, userInput.Password); err != nil {
@@ -90,4 +90,8 @@ func (service *AuthService) GetUserById(id uint) (*models.ResponseUser, error) {
 	}
 
 	return userResponse, nil
+}
+
+func (service *AuthService) GetCurrentUser(user *models.ResponseUser) {
+	currentUser = *user
 }

@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"project2/pkg/config"
 	"project2/pkg/models"
-	"project2/pkg/service"
 	iservice "project2/pkg/service/iservice"
 
 	"github.com/gin-gonic/gin"
@@ -108,7 +107,7 @@ func (cont *UserController) LogoutUser(ctx *gin.Context) {
 func (cont *UserController) Profile(ctx *gin.Context) {
 	current_user := ctx.MustGet("current_user")
 
-	service.CurrentUser = current_user.(models.ResponseUser)
+	cont.service.GetCurrentUser(current_user.(*models.ResponseUser))
 	ctx.JSON(
 		http.StatusOK,
 		gin.H{

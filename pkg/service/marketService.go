@@ -16,7 +16,18 @@ func NewMarketService(repo irepository.MarketInterface) iservice.MarketServiceIn
 }
 
 func (service *marketService) CreateProduct(product *models.ProductInput) (uint, error) {
-	id, err := service.repo.CreateProduct(product)
+
+	user := models.User{
+		Model: currentUser.Model,
+	}
+
+	createdProd := &models.Product{
+		Name:    product.Name,
+		Price:   product.Price,
+		User_ID: user.ID,
+	}
+
+	id, err := service.repo.CreateProduct(createdProd)
 
 	if err != nil {
 		return 0, err
@@ -27,6 +38,10 @@ func (service *marketService) CreateProduct(product *models.ProductInput) (uint,
 
 func (service *marketService) GetProductById(id uint) (*models.Product, error) {
 	return service.repo.GetProductById(id)
+}
+
+func (service *marketService) GetAllProducts() ([]models.Product, error) {
+	return service.repo.GetAllProducts()
 }
 
 func (service *marketService) GetProductByName(name string) ([]models.Product, error) {
@@ -40,7 +55,7 @@ func (service *marketService) DeleteProductById(id uint) error {
 		return err
 	}
 
-	if product.User.ID != CurrentUser.ID {
+	if product.User_ID != currentUser.ID {
 		return errors.New("you can not delete others product")
 	}
 

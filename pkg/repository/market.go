@@ -15,17 +15,12 @@ func NewMarketRepository(db *gorm.DB) interfaces.MarketInterface {
 	return &market{db: db}
 }
 
-func (m *market) CreateProduct(product *models.ProductInput) (uint, error) {
-	prod := &models.Product{
-		Name:  product.Name,
-		Price: product.Price,
-		User:  product.User,
-	}
-	if err := m.db.Create(&prod).Error; err != nil {
+func (m *market) CreateProduct(product *models.Product) (uint, error) {
+	if err := m.db.Create(&product).Error; err != nil {
 		return 0, err
 	}
 
-	return prod.ID, nil
+	return product.ID, nil
 }
 func (m *market) GetProductById(id uint) (*models.Product, error) {
 	var product models.Product

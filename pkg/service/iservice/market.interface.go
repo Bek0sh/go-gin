@@ -7,4 +7,5 @@ type MarketServiceInterface interface {
 	GetProductById(id uint) (*models.Product, error)
 	GetProductByName(name string) ([]models.Product, error)
 	DeleteProductById(id uint) error
+	GetAllProducts() ([]models.Product, error)
 }
